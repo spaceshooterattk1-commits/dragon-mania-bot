@@ -615,7 +615,7 @@ application.add_handler(
         get_media_file_id
     )
 )
-
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
     logger.info("Bot is starting...")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
