@@ -580,6 +580,22 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         parse_mode=ParseMode.MARKDOWN,
     )
 
+async def get_media_file_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    message = update.effective_message
+
+    if not user or user.username != OWNER_USERNAME or not message:
+        return
+
+    if message.video:
+        file_id = message.video.file_id
+    elif message.photo:
+        file_id = message.photo[-1].file_id
+    else:
+        return
+
+    await message.reply_text(f"File ID:\n{file_id}")
+
 
 def main() -> None:
     logging.basicConfig(
@@ -592,7 +608,13 @@ def main() -> None:
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button_handler))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, unknown))
+    
+application.add_handler(
+    MessageHandler(
+        (filters.VIDEO | filters.PHOTO) & filters.ChatType.PRIVATE,
+        get_media_file_id
+    )
+)
 
     logger.info("Bot is starting...")
     application.run_polling(allowed_updates=Update.ALL_TYPES)
